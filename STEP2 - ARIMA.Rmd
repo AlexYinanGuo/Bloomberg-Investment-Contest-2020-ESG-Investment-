@@ -1,0 +1,458 @@
+#STEP2 - ARIMA for daily closing price
+```{r}
+library(quantmod)
+library(tseries)
+library(timeSeries)
+library(forecast)
+library(xts)
+library(readxl)
+```
+
+##Asahi Rubber Inc (5162)
+###1. import data
+```{r}
+library(readxl)
+asahi <- read_excel("step2/price/asahi.xlsx")
+plot(asahi$PX_CLOSE_1D~asahi$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+asahi_p=asahi$PX_CLOSE_1D
+acf(asahi_p, main='ACF')
+pacf(asahi_p, main='PACF')
+print(adf.test(asahi_p)) # p-value = 0.03997, reject the null hypothesis, stationary 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(asahi_p, seasonal=FALSE) # auto arima(5,1,1) aic= 31099.33
+tsdisplay(residuals(m1), lag.max=40, main='(5,1,1) Residuals')
+
+m2 = arima(asahi_p, order=c(5,0,1)) # aic = 31125.07
+tsdisplay(residuals(m2), lag.max=40, main='(5,0,1) Residuals')
+
+m3 = arima(asahi_p, order=c(5,1,35)) # aic = 30836.84
+tsdisplay(residuals(m3), lag.max=40, main='(5,1,35) Residuals')
+
+m4 = arima(asahi_p, order=c(1,1,1)) # aic = 31403.02
+tsdisplay(residuals(m4), lag.max=40, main='(1,1,1) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=2.207857
+accuracy(fcast2) # MAPE=2.302455
+accuracy(fcast3) # MAPE=2.506598
+accuracy(fcast4) # MAPE=2.050446
+```
+
+##Asia Gate Holdings Co Ltd (1783)
+###1. import data
+```{r}
+asia_gate <- read_excel("step2/price/asia_gate.xlsx")
+par(mfrow=c(1,1)) 
+plot(asia_gate$PX_CLOSE_1D~asia_gate$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+asia_gate_p=asia_gate$PX_CLOSE_1D
+acf(asia_gate_p, main='ACF')
+pacf(asia_gate_p, main='PACF')
+print(adf.test(asia_gate_p)) # p-value = 0.99, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(asia_gate_p, seasonal=FALSE) # auto arima(5,2,0) aic= 18953.28
+tsdisplay(residuals(m1), lag.max=50, main='(5,2,0) Residuals')
+
+m2 = arima(asia_gate_p, order=c(1,2,1)) # aic = 18378.84
+tsdisplay(residuals(m2), lag.max=40, main='(1,2,1) Residuals')
+
+m3 = arima(asia_gate_p, order=c(5,2,46)) # aic = 18298.67
+tsdisplay(residuals(m3), lag.max=40, main='(5,2,46) Residuals')
+
+m4 = arima(asia_gate_p, order=c(5,1,0)) # aic = 18361.29
+tsdisplay(residuals(m4), lag.max=40, main='(5,1,0) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=3.02346
+accuracy(fcast2) # MAPE=2.676471
+accuracy(fcast3) # MAPE=2.844971
+accuracy(fcast4) # MAPE=2.701876
+```
+
+##Meiko Electronics Co Ltd (6787)
+###1. import data
+```{r}
+library(readxl)
+meiko <- read_excel("step2/price/meiko.xlsx")
+par(mfrow=c(1,1)) 
+plot(meiko$PX_CLOSE_1D~meiko$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+meiko_p=meiko$PX_CLOSE_1D
+acf(meiko_p, main='ACF')
+pacf(meiko_p, main='PACF')
+print(adf.test(meiko_p)) # p-value = 0.9056, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(meiko_p, seasonal=FALSE) # auto arima(0,1,1) aic= 37219.97
+tsdisplay(residuals(m1), lag.max=40, main='(0,1,1) Residuals')
+
+m2 = arima(meiko_p, order=c(1,1,1)) # aic = 37221.16
+tsdisplay(residuals(m2), lag.max=40, main='(1,1,1) Residuals')
+
+m3 = arima(meiko_p, order=c(0,1,36)) # aic = 37176.59
+tsdisplay(residuals(m3), lag.max=40, main='(0,1,36) Residuals')
+
+m4 = arima(meiko_p, order=c(0,2,1)) # aic = 37242.45
+tsdisplay(residuals(m4), lag.max=40, main='(0,2,1) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=2.633806
+accuracy(fcast2) # MAPE=2.633516
+accuracy(fcast3) # MAPE=2.679868
+accuracy(fcast4) # MAPE=2.638289
+```
+
+##NPC Inc/Japan (6255)
+###1. import data
+```{r}
+library(readxl)
+npc <- read_excel("step2/price/npc.xlsx")
+par(mfrow=c(1,1)) 
+plot(npc$PX_CLOSE_1D~npc$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+npc_p=npc$PX_CLOSE_1D
+acf(npc_p, main='ACF')
+pacf(npc_p, main='PACF')
+print(adf.test(npc_p)) # p-value = 0.6456, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(npc_p, seasonal=FALSE) # auto arima(4.1.3) aic=33154.84 
+tsdisplay(residuals(m1), lag.max=40, main='(4.1.3) Residuals')
+
+m2 = arima(npc_p, order=c(1,1,1)) # aic = 33178.08
+tsdisplay(residuals(m2), lag.max=40, main='(1,1,1) Residuals')
+
+m3 = arima(npc_p, order=c(4,1,32)) # aic = 33051.98
+tsdisplay(residuals(m3), lag.max=40, main='(4,1,32) Residuals')
+
+m4 = arima(npc_p, order=c(4,2,3)) # aic = 33147.97
+tsdisplay(residuals(m4), lag.max=40, main='(4,2,3) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=2.773617
+accuracy(fcast2) # MAPE=2.76903
+accuracy(fcast3) # MAPE=2.889939
+accuracy(fcast4) # MAPE=2.776108
+```
+
+##Pacific Systems Corp (3847)
+###1. import data
+```{r}
+library(readxl)
+pacific <- read_excel("step2/price/pacific.xlsx")
+par(mfrow=c(1,1)) 
+plot(pacific$PX_CLOSE_1D~pacific$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+pacific_p=pacific$PX_CLOSE_1D
+acf(pacific_p, main='ACF')
+pacf(pacific_p, main='PACF')
+print(adf.test(pacific_p)) # p-value = 0.9013, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(pacific_p, seasonal=FALSE) # auto arima(2,1,1) aic= 23448.59
+tsdisplay(residuals(m1), lag.max=40, main='(2,1,1) Residuals')
+
+m2 = arima(pacific_p, order=c(1,1,1)) # aic = 23459.19
+tsdisplay(residuals(m2), lag.max=40, main='(1,1,1) Residuals')
+
+m3 = arima(pacific_p, order=c(2,1,34)) # aic = 23401.77
+tsdisplay(residuals(m3), lag.max=40, main='(2,1,34) Residuals')
+
+m4 = arima(pacific_p, order=c(2,2,1)) # aic = 23462.35
+tsdisplay(residuals(m4), lag.max=40, main='(2,2,1) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=1.551456
+accuracy(fcast2) # MAPE=1.542347
+accuracy(fcast3) # MAPE=1.634257
+accuracy(fcast4) # MAPE=1.545892
+```
+
+##Shibaura Electronics Co Ltd (6957)
+###1. import data
+```{r}
+shibaura <- read_excel("step2/price/shibaura.xlsx")
+par(mfrow=c(1,1)) 
+plot(shibaura$PX_CLOSE_1D~shibaura$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+shibaura_p=shibaura$PX_CLOSE_1D
+acf(shibaura_p, main='ACF')
+pacf(shibaura_p, main='PACF')
+print(adf.test(shibaura_p)) # p-value = 0.7352, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(shibaura_p, seasonal=FALSE) # auto arima(2,1,2) aic=36463.04 
+tsdisplay(residuals(m1), lag.max=40, main='(2,1,2) Residuals')
+
+m2 = arima(shibaura_p, order=c(1,1,1)) # aic = 36491.6
+tsdisplay(residuals(m2), lag.max=40, main='(1,1,1) Residuals')
+
+m3 = arima(shibaura_p, order=c(2,1,31)) # aic = 36471.22
+tsdisplay(residuals(m3), lag.max=40, main='(2,1,31) Residuals')
+
+m4 = arima(shibaura_p, order=c(2,2,2)) # aic = 36493.25
+tsdisplay(residuals(m4), lag.max=40, main='(2,2,2) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=1.768946
+accuracy(fcast2) # MAPE=1.758124
+accuracy(fcast3) # MAPE=1.777086
+accuracy(fcast4) # MAPE=1.757479
+```
+
+##SK-Electronics Co Ltd (6677)
+###1. import data
+```{r}
+library(readxl)
+sk <- read_excel("step2/price/sk.xlsx")
+par(mfrow=c(1,1)) 
+plot(sk$PX_CLOSE_1D~sk$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+sk_p=sk$PX_CLOSE_1D
+acf(sk_p, main='ACF')
+pacf(sk_p, main='PACF')
+print(adf.test(sk_p)) # p-value = 0.3819, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(sk_p, seasonal=FALSE) # auto arima(0,1,0) aic= 34002.27
+tsdisplay(residuals(m1), lag.max=40, main='(0,1,0) Residuals')
+
+m2 = arima(sk_p, order=c(1,1,1)) # aic = 34004.62
+tsdisplay(residuals(m2), lag.max=40, main='(1,1,1) Residuals')
+
+m3 = arima(sk_p, order=c(0,1,32)) # aic = 33964.54
+tsdisplay(residuals(m3), lag.max=40, main='(0,1,32) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=2.706122
+accuracy(fcast2) # MAPE=2.746187
+accuracy(fcast3) # MAPE=1.757479
+```
+
+##Yamazaki Co Ltd (6147)
+###1. import data
+```{r}
+library(readxl)
+yamazaki <- read_excel("step2/price/yamazaki.xlsx")
+par(mfrow=c(1,1)) 
+plot(yamazaki$PX_CLOSE_1D~yamazaki$Date, yabl='PX_CLOSE_1D', type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+yamazaki_p=yamazaki$PX_CLOSE_1D
+acf(yamazaki_p, main='ACF')
+pacf(yamazaki_p, main='PACF')
+print(adf.test(yamazaki_p)) # p-value = 0.08563, accept the null hypothesis, there is a unit root 
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(yamazaki_p, seasonal=FALSE) # auto arima(1,1,1) aic= 23972.25
+tsdisplay(residuals(m1), lag.max=40, main='(1,1,1) Residuals')
+
+m2 = arima(yamazaki_p, order=c(1,2,1)) # aic = 24032.01
+tsdisplay(residuals(m2), lag.max=40, main='(1,2,1) Residuals')
+
+m3 = arima(yamazaki_p, order=c(1,1,38)) # aic = 23976.5
+tsdisplay(residuals(m3), lag.max=40, main='(1,1,38) Residuals')
+
+m4 = arima(yamazaki_p, order=c(1,2,38)) # aic = 23984.84
+tsdisplay(residuals(m4), lag.max=40, main='(1,2,38) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=2.296522
+accuracy(fcast2) # MAPE=2.217957
+accuracy(fcast3) # MAPE=2.367674
+accuracy(fcast4) # MAPE=2.355961
+```
+
+##GNI Group Ltd (2160)
+###1. import data
+```{r}
+library(readxl)
+gni <- read_excel("step2/price/gni.xlsx")
+par(mfrow=c(1,1)) 
+plot(gni$`Last Price`~gni$Date, yabl=gni$`Last Price`, type='l')
+```
+###2. plot ACF & PACF, ACF->P, PACF->Q 
+```{r}
+par(mfrow=c(1,2)) 
+gni_p=gni$`Last Price`
+acf(gni_p, main='ACF')
+pacf(gni_p, main='PACF')
+```
+###3. build models (m1 is auto ARIMA; m2-4 are customized)
+```{r}
+m1 = auto.arima(gni_p, seasonal=FALSE) # auto arima(2,1,2) aic= 34136.86
+tsdisplay(residuals(m1), lag.max=40, main='(2,1,2) Residuals')
+
+m2 = arima(gni_p, order=c(1,1,1)) # aic = 34177.58
+tsdisplay(residuals(m2), lag.max=40, main='(1,1,1) Residuals')
+
+m3 = arima(gni_p, order=c(0,1,26)) # aic = 34119
+tsdisplay(residuals(m3), lag.max=40, main='(0,1,26) Residuals')
+
+m4 = arima(gni_p, order=c(2,2,2)) # aic = 34180.15
+tsdisplay(residuals(m4), lag.max=40, main='(2,2,2) Residuals')
+```
+###4. forecast 40 days
+```{r}
+par(mfrow=c(2,2))
+term<-40
+fcast1 <- forecast(m1, h=term)
+plot(fcast1, include=10)
+fcast2 <- forecast(m2, h=term)
+plot(fcast2, include=10)
+fcast3 <- forecast(m3, h=term)
+plot(fcast3, include=10)
+fcast4 <- forecast(m4, h=term)
+plot(fcast4, include=10)
+```
+###5. accuracy
+```{r}
+accuracy(fcast1) # MAPE=4.252303
+accuracy(fcast2) # MAPE=4.1739
+accuracy(fcast3) # MAPE=4.324983
+accuracy(fcast4) # MAPE=4.250966
+```
